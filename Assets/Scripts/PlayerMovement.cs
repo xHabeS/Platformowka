@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public Animator animator;
     public float groundSpeed;
     public float jumpSpeed;
     public float acceleration;
@@ -13,15 +14,14 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask groundMask;
     public bool grounded;
 
+    public float knockbackForce;
+    public float knockbackDuration;
+    public float knockbackTime;
+    public bool knockRight;
+
     float xInput;
     float yInput;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
     void Update()
     {
         GetInput();
@@ -29,7 +29,22 @@ public class PlayerMovement : MonoBehaviour
     }
         void FixedUpdate()
     {
-        MoveWithInput();
+        if (knockbackDuration <= 0)
+        {
+            MoveWithInput();
+        }
+        else
+        {
+            if(knockRight == true)
+            {
+                body.linearVelocity = new Vector2(-knockbackForce, knockbackForce);
+            }
+            if(knockRight == false)
+            {
+                body.linearVelocity = new Vector2(knockbackForce, knockbackForce);
+            }
+            knockbackDuration -= Time.deltaTime;
+        }
         CheckGround();
         ApplyFriction();
     }
@@ -38,10 +53,15 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Mathf.Abs(xInput) > 0)
         {
+           animator.SetInteger("AnimState", 1);
            float increment = acceleration * xInput;
            float newSpeed = Mathf.Clamp(body.linearVelocity.x + increment, -groundSpeed, groundSpeed);
            body.linearVelocity = new Vector2(newSpeed, body.linearVelocity.y);
            FaceInput();
+        }
+        else
+        {
+            animator.SetInteger("AnimState", 0);
         }
     }
 
@@ -52,7 +72,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void HandleJump()
     {
-        if (Input.GetButtonDown("Jump") && grounded)
+        if (yInput > 0 && grounded)
         {
             body.linearVelocity = new Vector2(body.linearVelocity.x, jumpSpeed);
         }
@@ -66,6 +86,14 @@ public class PlayerMovement : MonoBehaviour
     void CheckGround()
     {
         grounded = Physics2D.OverlapAreaAll(groundCheck.bounds.min, groundCheck.bounds.max, groundMask).Length > 0;
+        if (grounded)
+        {
+            animator.SetBool("Grounded", true);
+        }
+        else
+        {
+            animator.SetBool("Grounded", false);
+        }
     }
     void ApplyFriction()
     {
