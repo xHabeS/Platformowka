@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public Animator animator;
+    public Animator animator;
     public float groundSpeed;
     public float jumpSpeed;
     public float acceleration;
@@ -19,8 +20,14 @@ public class PlayerMovement : MonoBehaviour
     public float knockbackTime;
     public bool knockRight;
 
+    public float knockbackForce;
+    public float knockbackDuration;
+    public float knockbackTime;
+    public bool knockRight;
+
     float xInput;
     float yInput;
+
 
     void Update()
     {
@@ -66,6 +73,10 @@ public class PlayerMovement : MonoBehaviour
         {
             animator.SetInteger("AnimState", 0);
         }
+        else
+        {
+            animator.SetInteger("AnimState", 0);
+        }
     }
 
     void FaceInput()
@@ -75,6 +86,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void HandleJump()
     {
+        if (yInput > 0 && grounded)
         if (yInput > 0 && grounded)
         {
             body.linearVelocity = new Vector2(body.linearVelocity.x, jumpSpeed);
@@ -90,6 +102,14 @@ public class PlayerMovement : MonoBehaviour
     void CheckGround()
     {
         grounded = Physics2D.OverlapAreaAll(groundCheck.bounds.min, groundCheck.bounds.max, groundMask).Length > 0;
+        if (grounded)
+        {
+            animator.SetBool("Grounded", true);
+        }
+        else
+        {
+            animator.SetBool("Grounded", false);
+        }
         if (grounded)
         {
             animator.SetBool("Grounded", true);
